@@ -82,7 +82,7 @@ main(void) {
 	{
 		btn = Pressed(Inputs, NUM_BUTTONS);
 
-		if (btn == Quitbutton) break;
+		if (btn == Quitbutton) return 0;
 
 		if (btn == L2Rbutton) {
 			step = 1;	// Left to Right
