@@ -41,7 +41,9 @@ int main(void) {
 	{
 		btn = Pressed(Inputs, NUM_BUTTONS);
 
-		if (btn == Quitbutton) break;
+		if (btn == Quitbutton){
+			break;
+		}
 
 		if (btn == L2Rbutton) {
 			step = 1;	// Left to Right
@@ -61,6 +63,9 @@ int main(void) {
 
 		DelayMS(Inputs, NUM_BUTTONS, 500);
 	}
+	for (i = 0; i < NUM_LEDS; i++) {
+			digitalWrite(Leds[i], 0);
+		}
 	return 0;
 }
 
@@ -89,3 +94,4 @@ void DelayMS(int pins[], int count, long long ms) {
 			break;
 	}
 }
+
