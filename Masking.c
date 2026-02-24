@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <sys/mman.h>
 #include <sys/types.h>
-#include <sys/timeb.h>
 #include <unistd.h>
+#include <time.h>
 
 // ---------Notes---------
 // GPIO FUNCTION SELECT REGISTERS:
@@ -21,8 +21,8 @@
 void pinSelect(int pin, int mode);
 void setPin(int pin, int state);
 int readPin(int pin);
+long long GetTimeMS();
 int Pressed(int pins[], int count);
-long long GetTimeMS(void);
 void DelayMS(int pins[], int count, long long ms);
 
 #define NUM_BUTTONS 3
@@ -30,7 +30,7 @@ void DelayMS(int pins[], int count, long long ms);
 
 volatile unsigned int* GPIO;
 
-main(void) {
+int main(void) {
 	// USE VIRTUAL MEMORY SPACE FOR PI 3 //
 	// unsigned int BASE = 0x3F200000;
 	// USE VIRTUAL MEMORY SPACE FOR PI 4 //
@@ -78,15 +78,11 @@ main(void) {
 	int step = 1;		// +1 = left-to-right, -1 = right-to-left
 	int btn;
 
-	while (1)
+	while (btn != Quitbutton)
 	{
 		btn = Pressed(Inputs, NUM_BUTTONS);
 
-		if (btn == Quitbutton){
-			munmap((void*)GPIO, getpagesize());
-			close(MEM);
-			return 0; 
-		} 
+		if (btn == Quitbutton) break;
 
 		if (btn == L2Rbutton) {
 			step = 1;	// Left to Right
@@ -110,9 +106,9 @@ main(void) {
 	for (i = 0; i < NUM_LEDS; i++) {
 		setPin(Leds[i], 0);
 	}
-
 	munmap((void*)GPIO, getpagesize());
 	close(MEM);
+	return 0;
 }
 
 // Mode: 0 = INPUT, 1 = OUTPUT
@@ -168,15 +164,15 @@ int Pressed(int pins[], int count) {
 }
 
 long long GetTimeMS(void) {
-	struct timeb time;      // Structure to hold time information
-	ftime(&time);           // Get the current time and store it in the time structure
-	return (long long)time.time * 1000 + time.millitm;  // Calculate and return the current time in milliseconds by combining seconds and milliseconds
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (long long)ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
 }
 
 // Function to delay execution for a specified number of milliseconds
 void DelayMS(int pins[], int count, long long ms) {
 	long long start = GetTimeMS();
-
+	
 	while (GetTimeMS() - start < ms) {
 		if (Pressed(pins, count) != -1)
 			break;
